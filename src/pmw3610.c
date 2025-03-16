@@ -741,13 +741,14 @@ static int pmw3610_report_data(const struct device *dev) {
         return err;
     }
 
-    LOG_DBG("Raw sensor data from burst: motion=%d, raw_x=%d, raw_y=%d", 
-        buf[0], raw_x, raw_y);
 
     int16_t raw_x =
         TOINT16((buf[PMW3610_X_L_POS] + ((buf[PMW3610_XY_H_POS] & 0xF0) << 4)), 12) / dividor;
     int16_t raw_y =
         TOINT16((buf[PMW3610_Y_L_POS] + ((buf[PMW3610_XY_H_POS] & 0x0F) << 8)), 12) / dividor;
+
+    LOG_DBG("Raw sensor data from burst: motion=%d, raw_x=%d, raw_y=%d", 
+        buf[0], raw_x, raw_y);
 
     if (IS_ENABLED(CONFIG_PMW3610_ORIENTATION_0)) {
         x = -raw_x;
