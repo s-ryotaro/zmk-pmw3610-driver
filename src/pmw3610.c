@@ -608,11 +608,17 @@ static inline void calculate_scroll_acceleration(int16_t x, int16_t y, struct pi
         int64_t current_time = k_uptime_get();
         int64_t delta_time = data->last_scroll_time > 0 ? 
                             current_time - data->last_scroll_time : 0;
+
+        LOG_DBG("Accel calc: movement=%d, delta_time=%lld", movement, delta_time);
+
         
         if (delta_time > 0 && delta_time < 100) {
             float speed = (float)movement / delta_time;
             float base_sensitivity = (float)CONFIG_PMW3610_SCROLL_ACCELERATION_SENSITIVITY;
             float acceleration = 1.0f + (base_sensitivity - 1.0f) * (1.0f / (1.0f + expf(-0.2f * (speed - 10.0f))));
+            
+            LOG_DBG("Accel factors: speed=%.2f, sensitivity=%.2f, accel=%.2f", 
+                    speed, base_sensitivity, acceleration);
             
             *accel_x = (int32_t)(x * acceleration);
             *accel_y = (int32_t)(y * acceleration);
@@ -627,10 +633,15 @@ static inline void calculate_scroll_acceleration(int16_t x, int16_t y, struct pi
 
 static inline void process_scroll_events(const struct device *dev, struct pixart_data *data,
                                         int32_t delta, bool is_horizontal) {
+    LOG_DBG("Process scroll: delta=%d, is_horiz=%d, tick=%d", 
+            delta, is_horizontal, CONFIG_PMW3610_SCROLL_TICK);
+
     if (abs(delta) > CONFIG_PMW3610_SCROLL_TICK) {
         int event_count = abs(delta) / CONFIG_PMW3610_SCROLL_TICK;
         const int MAX_EVENTS = 20;
         int32_t *target_delta = is_horizontal ? &data->scroll_delta_x : &data->scroll_delta_y;
+
+        LOG_DBG("Generating %d scroll events (max=%d)", event_count, MAX_EVENTS);
         
         if (event_count > MAX_EVENTS) {
             event_count = MAX_EVENTS;
@@ -638,8 +649,10 @@ static inline void process_scroll_events(const struct device *dev, struct pixart
                 delta - (MAX_EVENTS * CONFIG_PMW3610_SCROLL_TICK) :
                 delta + (MAX_EVENTS * CONFIG_PMW3610_SCROLL_TICK);
             data->last_remainder_time = k_uptime_get();
+            LOG_DBG("Limited events, remainder delta=%d", *target_delta);
         } else {
             *target_delta = delta % CONFIG_PMW3610_SCROLL_TICK;
+            LOG_DBG("Remainder delta=%d", *target_delta);
         }
         
         for (int i = 0; i < event_count; i++) {
@@ -650,6 +663,13 @@ static inline void process_scroll_events(const struct device *dev, struct pixart
                                 (is_horizontal ? PMW3610_SCROLL_X_POSITIVE : PMW3610_SCROLL_Y_POSITIVE),
                             (i == event_count - 1),
                             K_MSEC(10));
+
+            LOG_DBG("Sending event: rel=%d, value=%d", 
+                    is_horizontal ? INPUT_REL_HWHEEL : INPUT_REL_WHEEL,
+                    delta > 0 ? 
+                        (is_horizontal ? PMW3610_SCROLL_X_NEGATIVE : PMW3610_SCROLL_Y_NEGATIVE) :
+                        (is_horizontal ? PMW3610_SCROLL_X_POSITIVE : PMW3610_SCROLL_Y_POSITIVE));
+
         }
         
         if (is_horizontal) {
@@ -721,6 +741,9 @@ static int pmw3610_report_data(const struct device *dev) {
         return err;
     }
 
+    LOG_DBG("Raw sensor data from burst: motion=%d, raw_x=%d, raw_y=%d", 
+        buf[0], raw_x, raw_y);
+
     int16_t raw_x =
         TOINT16((buf[PMW3610_X_L_POS] + ((buf[PMW3610_XY_H_POS] & 0xF0) << 4)), 12) / dividor;
     int16_t raw_y =
@@ -747,6 +770,8 @@ static int pmw3610_report_data(const struct device *dev) {
     if (IS_ENABLED(CONFIG_PMW3610_INVERT_Y)) {
         y = -y;
     }
+
+    LOG_DBG("After orientation: x=%d, y=%d, mode=%d", x, y, input_mode);
 
     int64_t current_time = k_uptime_get();
     if (data->last_remainder_time > 0) {
@@ -805,10 +830,19 @@ static int pmw3610_report_data(const struct device *dev) {
             input_report_rel(dev, INPUT_REL_Y, y, true, K_FOREVER);
         } else if (input_mode == SCROLL) {
             int32_t accel_x, accel_y;
+
+            LOG_DBG("Before accel: x=%d, y=%d", x, y);
+
             calculate_scroll_acceleration(x, y, data, &accel_x, &accel_y);
+
+            LOG_DBG("After accel: accel_x=%d, accel_y=%d", accel_x, accel_y);
             
             data->scroll_delta_x += accel_x;
             data->scroll_delta_y += accel_y;
+
+            LOG_DBG("Accumulated deltas: dx=%d, dy=%d", 
+                data->scroll_delta_x, data->scroll_delta_y);
+
             
             process_scroll_events(dev, data, data->scroll_delta_y, false);
             process_scroll_events(dev, data, data->scroll_delta_x, true);
