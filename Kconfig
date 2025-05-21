@@ -6,15 +6,15 @@
 #
 
 menuconfig PMW3610
-    bool "PMW3610 mouse optical sensor"
-  select SPI
+    bool "PMW3610 mouse optical sensor"# PMW3610マウス用光学センサーの有効/無効
+  select SPI # SPIインターフェースを自動で有効化
     help
-      Enable PMW3610 mouse optical sensor.
+      Enable PMW3610 mouse optical sensor.# PMW3610センサーの有効化
 
 if PMW3610
 
 config PMW3610_SMART_ALGORITHM
-  bool "Enable an algorithm of PMW3610 to enhance surface coverage"
+  bool "Enable an algorithm of PMW3610 to enhance surface coverage" # PMW3610のスマートアルゴリズム有効化
   default y
   help
     Enable the integration of the smart algorithm as the datasheet implementation.
@@ -22,61 +22,61 @@ config PMW3610_SMART_ALGORITHM
     such as graniles and tiles.
 
 config PMW3610_CPI
-    int "PMW3610's default CPI"
+    int "PMW3610's default CPI"# センサーのデフォルトCPI（感度）設定
     default 800
     range 200 3200
     help
-      Default CPI value, with 200 step
+      Default CPI value, with 200 step # 200～3200の範囲で200刻み
 
 config PMW3610_CPI_DIVIDOR
-    int "PMW3610's default CPI dividor"
+    int "PMW3610's default CPI dividor" # CPI値に掛ける除数指定
     default 1
     range 1 100
     help
-      Default CPI dividor value.
+      Default CPI dividor value. # CPIの割り算値
 
 config PMW3610_SNIPE_CPI
-    int "PMW3610's CPI in snipe mode"
+    int "PMW3610's CPI in snipe mode" # スナイプモード時のCPI設定
     default 200
     range 200 3200
     help
       Snipe CPI value, with 200 step
 
 config PMW3610_SNIPE_CPI_DIVIDOR
-    int "PMW3610's CPI dividor in snipe mode"
+    int "PMW3610's CPI dividor in snipe mode" # スナイプモード時のCPI除数
     default 1
     range 1 100
     help
       Snipe CPI dividor value.
 
 config PMW3610_SCROLL_TICK
-    int "PMW3610's required ticks to produce a scroll report"
+    int "PMW3610's required ticks to produce a scroll report" # スクロールレポート生成に必要なティック数
     default 20
     help
       Scroll tick value.
 
 choice
-    prompt "Select PMW3610's polling rate"
+    prompt "Select PMW3610's polling rate" # センサーのポーリングレート選択
     default PMW3610_POLLING_RATE_250
 
 config PMW3610_POLLING_RATE_250
-    bool "250 Hz"
+    bool "250 Hz" # 250Hzでのポーリング
 
 config PMW3610_POLLING_RATE_125
-    bool "125 Hz"
+    bool "125 Hz" # 125Hzでのポーリング
 
 config PMW3610_POLLING_RATE_125_SW
-    bool "125 Hz with software implementation"
+    bool "125 Hz with software implementation" # ソフトウェアで125Hzを実現
 
 endchoice
 
 config PMW3610_FORCE_AWAKE
-    bool "PMW3610 forced awake mode"
+    bool "PMW3610 forced awake mode" # 常にRUN状態にする強制起動設定
     help
       This setting forces the sensor to always be in the RUN state.
 
 config PMW3610_RUN_DOWNSHIFT_TIME_MS
-    int "PMW3610's default RUN mode downshift time"
+    int "PMW3610's default RUN mode downshift time" # RUNモードからREST1モードへ移行するまでの時間(ms)
     default 128
     range 13 3264
     help
@@ -123,44 +123,45 @@ config PMW3610_REST3_SAMPLE_TIME_MS
       Minimum value is 10.
       No optimal value provided by datasheet.
 
+# センサーの回転方向指定
 choice
-    prompt "Select PMW3610 sensor orientation"
+    prompt "Select PMW3610 sensor orientation" # センサーの向き指定
     default PMW3610_ORIENTATION_0
 
 config PMW3610_ORIENTATION_0
-    bool "PMW3610 not rotated"
+    bool "PMW3610 not rotated" # 0度（回転なし）
 
 config PMW3610_ORIENTATION_90
-    bool "PMW3610 rotated 90 deg clockwise"
+    bool "PMW3610 rotated 90 deg clockwise" # 90度時計回り
 
 config PMW3610_ORIENTATION_180
-    bool "PMW3610 rotated 180 deg clockwise"
+    bool "PMW3610 rotated 180 deg clockwise" # 180度時計回り
 
 config PMW3610_ORIENTATION_270
-    bool "PMW3610 rotated 270 deg clockwise"
+    bool "PMW3610 rotated 270 deg clockwise" # 270度時計回り
 
 endchoice
 
 config PMW3610_INVERT_X
-  bool "Invert the X axis of PMW3610 sensor"
+  bool "Invert the X axis of PMW3610 sensor"  # X軸の反転
 
 config PMW3610_INVERT_Y
-  bool "Invert the Y axis of PMW3610 sensor"
+  bool "Invert the Y axis of PMW3610 sensor"  # Y軸の反転
 
 config PMW3610_INVERT_SCROLL_X
-  bool "Invert the X axis of the scroll"
+  bool "Invert the X axis of the scroll" # スクロールのX軸反転
   default PMW3610_INVERT_X
 
 config PMW3610_INVERT_SCROLL_Y
-  bool "Invert the Y axis of the scroll"
+  bool "Invert the Y axis of the scroll" # スクロールのY軸反転
   default PMW3610_INVERT_Y
 
 config PMW3610_AUTOMOUSE_TIMEOUT_MS
-  int "Amount of milliseconds the mouse layer will be active after using the trackball"
+  int "Amount of milliseconds the mouse layer will be active after using the trackball" # トラックボール操作後、マウスレイヤ有効時間(ms)
   default 400
 
 config PMW3610_MOVEMENT_THRESHOLD
-    int "Movement threshold for automatic mouse layer activation"
+    int "Movement threshold for automatic mouse layer activation"  # ボールアクション発動に必要なティック数
     default 5
     help
         The threshold for trackball movement that triggers the automatic mouse layer.
@@ -174,13 +175,13 @@ config PMW3610_BALL_ACTION_TICK
         Ball action tick value. Higher values require more movement to trigger a ball action.
 
 config PMW3610_SCROLL_ACCELERATION
-    bool "Enable scroll acceleration"
-    default n
+    bool "Enable scroll acceleration" # スクロール加速度機能の有効/無効
+    default y #デフォルト n
     help
       Enable acceleration for scrolling based on movement speed.
 
 config PMW3610_SCROLL_ACCELERATION_SENSITIVITY
-    int "Scroll acceleration sensitivity (1-10)"
+    int "Scroll acceleration sensitivity (1-10)"  # スクロール加速度の感度設定
     default 3
     range 1 10
     depends on PMW3610_SCROLL_ACCELERATION
