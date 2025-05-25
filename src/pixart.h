@@ -56,7 +56,10 @@ struct pixart_data {
     bool sw_smart_flag;
 
     // for scroll acceleration
-    int64_t last_remainder_time;
+    int64_t last_remainder_time; //追記1
+#ifdef CONFIG_PMW3610_MOVE_ACCELERATION  //追記2
+    int64_t last_move_time;  //追記3
+#endif  //追記4
 };
 
 // ball action config data structure

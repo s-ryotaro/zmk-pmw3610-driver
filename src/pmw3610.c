@@ -684,6 +684,32 @@ static inline void process_scroll_events(const struct device *dev, struct pixart
 }
 
 
+
+// ↓↓↓ この下に追記します ↓↓↓
+static inline void calculate_move_acceleration(int16_t x, int16_t y, struct pixart_data *data, int32_t *accel_x, int32_t *accel_y) {
+    *accel_x = x;
+    *accel_y = y;
+#ifdef CONFIG_PMW3610_MOVE_ACCELERATION
+    int32_t movement = abs(x) + abs(y);
+    int64_t current_time = k_uptime_get();
+    int64_t delta_time = data->last_move_time > 0 ? current_time - data->last_move_time : 0;
+
+    if (delta_time > 0 && delta_time < 100) {
+        float speed = (float)movement / delta_time;
+        float base_sensitivity = (float)CONFIG_PMW3610_MOVE_ACCELERATION_SENSITIVITY;
+        float acceleration = 1.0f + (base_sensitivity - 1.0f) * (1.0f / (1.0f + expf(-0.2f * (speed - 10.0f))));
+        *accel_x = (int32_t)(x * acceleration);
+        *accel_y = (int32_t)(y * acceleration);
+        if (abs(x) <= 1) *accel_x = x;
+        if (abs(y) <= 1) *accel_y = y;
+    }
+    data->last_move_time = current_time;
+#endif
+}
+// --- 以降、他の関数が続く ---
+
+
+
 static int pmw3610_report_data(const struct device *dev) {
     struct pixart_data *data = dev->data;
     uint8_t buf[PMW3610_BURST_SIZE];
