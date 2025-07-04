@@ -615,7 +615,7 @@ static inline void calculate_scroll_acceleration(int16_t x, int16_t y, struct pi
         if (delta_time > 0 && delta_time < 100) {
             float speed = (float)movement / delta_time;
             float base_sensitivity = (float)CONFIG_PMW3610_SCROLL_ACCELERATION_SENSITIVITY;
-            float min_accel = 0.5f;
+            float min_accel = 0.0f;
             float max_accel = base_sensitivity;
             float accel_range = max_accel - min_accel;
             float acceleration = min_accel + accel_range * (1.0f / (1.0f + expf(-0.2f * (speed - 10.0f))));//618~621_加速度最小値0.5になるよう変更
@@ -686,6 +686,7 @@ static inline void process_scroll_events(const struct device *dev, struct pixart
 
 
 // ↓↓↓ この下に追記します ↓↓↓
+#define CONFIG_PMW3610_MOVE_ACCELERATION
 static inline void calculate_move_acceleration(int16_t x, int16_t y, struct pixart_data *data, int32_t *accel_x, int32_t *accel_y) {
     *accel_x = x;
     *accel_y = y;
