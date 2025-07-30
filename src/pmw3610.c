@@ -857,8 +857,18 @@ static int pmw3610_report_data(const struct device *dev) {
                 activate_automouse_layer();
             }
 #endif
-            input_report_rel(dev, INPUT_REL_X, x, false, K_FOREVER);
-            input_report_rel(dev, INPUT_REL_Y, y, true, K_FOREVER);
+            int32_t accel_x, accel_y;
+            
+            if (input_mode == MOVE) {
+                // MOVEモードでは加速度制御を適用
+                calculate_move_acceleration(x, y, data, &accel_x, &accel_y);
+                input_report_rel(dev, INPUT_REL_X, accel_x, false, K_FOREVER);
+                input_report_rel(dev, INPUT_REL_Y, accel_y, true, K_FOREVER);
+            } else {
+                // SNIPEモードでは加速度制御なし（精密操作のため）
+                input_report_rel(dev, INPUT_REL_X, x, false, K_FOREVER);
+                input_report_rel(dev, INPUT_REL_Y, y, true, K_FOREVER);
+            }
         } else if (input_mode == SCROLL) {
             int32_t accel_x, accel_y;
 
