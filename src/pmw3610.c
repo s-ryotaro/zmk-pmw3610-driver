@@ -599,7 +599,7 @@ static enum pixart_input_mode get_input_mode_for_current_layer(const struct devi
 }
 
 // ｽｸﾛｰﾙの加速度
-#define CONFIG_PMW3610_SCROLL_ACCELERATION
+//#define CONFIG_PMW3610_SCROLL_ACCELERATION
 static inline void calculate_scroll_acceleration(int16_t x, int16_t y, struct pixart_data *data,
                                                 int32_t *accel_x, int32_t *accel_y) {
     *accel_x = x;
