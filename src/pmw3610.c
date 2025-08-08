@@ -598,6 +598,8 @@ static enum pixart_input_mode get_input_mode_for_current_layer(const struct devi
     return MOVE;
 }
 
+// ｽｸﾛｰﾙの加速度
+#define CONFIG_PMW3610_SCROLL_ACCELERATION
 static inline void calculate_scroll_acceleration(int16_t x, int16_t y, struct pixart_data *data,
                                                 int32_t *accel_x, int32_t *accel_y) {
     *accel_x = x;
@@ -685,7 +687,7 @@ static inline void process_scroll_events(const struct device *dev, struct pixart
 
 
 
-// ↓↓↓ この下に追記します ↓↓↓
+// マウスの加速度
 #define CONFIG_PMW3610_MOVE_ACCELERATION
 static inline void calculate_move_acceleration(int16_t x, int16_t y, struct pixart_data *data, int32_t *accel_x, int32_t *accel_y) {
     *accel_x = x;
@@ -707,10 +709,9 @@ static inline void calculate_move_acceleration(int16_t x, int16_t y, struct pixa
     data->last_move_time = current_time;
 #endif
 }
+
+
 // --- 以降、他の関数が続く ---
-
-
-
 static int pmw3610_report_data(const struct device *dev) {
     struct pixart_data *data = dev->data;
     uint8_t buf[PMW3610_BURST_SIZE];
